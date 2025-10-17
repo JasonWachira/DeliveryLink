@@ -9,7 +9,8 @@
 
 ```cd DeliveryLink```
 
-**Create individual branch
+**Create individual branch**
 
 ```git branch<branch-name>```
+
 ```git checkout<branch-name>```
