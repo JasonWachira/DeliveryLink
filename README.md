@@ -8,3 +8,8 @@
 ``` git clone https://github.com/JasonWachira/DeliveryLink.git```
 
 ```cd DeliveryLink```
+
+**Create individual branch
+
+```git branch<branch-name>```
+```git checkout<branch-name>```
