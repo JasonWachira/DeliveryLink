@@ -13,3 +13,9 @@
 
 ```git branch<branch-name>```
 ```git checkout<branch-name>```
+
+**Make changes**
+
+**Add files to staging area**
+
+```git add .```
