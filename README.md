@@ -19,3 +19,4 @@
 **Add files to staging area**
 
 ```git add .```
+``git commit -m "Initial commit"``
