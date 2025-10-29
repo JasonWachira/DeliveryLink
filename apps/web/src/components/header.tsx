@@ -86,14 +86,7 @@ prefetch={false}
 <ServicesIcon className="h-5 w-5" />
 <span className="font-medium">Services</span>
 </Link>
-<Link
-href="/blog"
-className="flex items-center gap-3 py-3 px-4 rounded-lg hover:bg-accent text-foreground transition-colors"
-prefetch={false}
->
-<BlogIcon className="h-5 w-5" />
-<span className="font-medium">Blog</span>
-</Link>
+
 <Link
 href="/contact"
 className="flex items-center gap-3 py-3 px-4 rounded-lg hover:bg-accent text-foreground transition-colors"
@@ -103,20 +96,20 @@ prefetch={false}
 <span className="font-medium">Contact</span>
 </Link>
 <Link
-href="/book-session"
+href="/start-order"
 className="flex items-center gap-3 py-3 px-4 rounded-lg hover:bg-accent text-foreground transition-colors"
 prefetch={false}
 >
 <CalendarIcon className="h-5 w-5" />
-<span className="font-medium">Book Session</span>
+<span className="font-medium">Start Order</span>
 </Link>
 <Link
-href="/office"
+href="/track-order"
 className="flex items-center gap-3 py-3 px-4 rounded-lg hover:bg-accent text-foreground transition-colors"
 prefetch={false}
 >
 <BuildingIcon className="h-5 w-5" />
-<span className="font-medium">Rent Office</span>
+<span className="font-medium">Track Order</span>
 </Link>
 
           </div>
@@ -143,14 +136,14 @@ prefetch={false}
   <NavLink href="/" active={pathname.substring(1)==""?true:false}>Home</NavLink>
   <NavLink href="/about" active={pathname.substring(1)=="about"?true:false}>About</NavLink>
   <NavLink href="/services" active={pathname.substring(1)=="services"?true:false}>Services</NavLink>
-  <NavLink href="/blog" active={pathname.substring(1)=="blog"?true:false}>Blog</NavLink>
+
   <NavLink href="/contact" active={pathname.substring(1)=="contact"?true:false}>Contact</NavLink>
 
- <Button size="sm" className="ml-1 2xl:ml-2 bg-primary text-primary-foreground hover:bg-primary/90 whitespace-nowrap text-xs xl:text-sm px-2 2xl:px-3" onClick={() => router.push("/book-session")}>
-Book Session
+ <Button size="sm" className="ml-1 2xl:ml-2 bg-primary text-primary-foreground hover:bg-primary/90 whitespace-nowrap text-xs xl:text-sm px-2 2xl:px-3" onClick={() => router.push("/start-order")}>
+Start Order
 </Button>
-<Button variant="outline" size="sm" className="ml-1 whitespace-nowrap text-xs xl:text-sm px-2 2xl:px-3" onClick={() => router.push("/office")}>
-Rent Office
+<Button variant="outline" size="sm" className="ml-1 whitespace-nowrap text-xs xl:text-sm px-2 2xl:px-3" onClick={() => router.push("/track-order")}>
+Track Order
 </Button>
 </nav>
 
@@ -196,11 +189,9 @@ Rent Office
         </DropdownMenu>
       ) : (
         <div className="flex gap-1">
-          <Button variant="ghost" size="sm" className="hover:bg-primary/10 whitespace-nowrap text-xs px-2 md:px-3" onClick={() => router.push("/signin")}>
+
+          <Button size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 whitespace-nowrap text-xs px-2 md:px-3" onClick={() => router.push("/auth")}>
             Sign in
-          </Button>
-          <Button size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 whitespace-nowrap text-xs px-2 md:px-3" onClick={() => router.push("/signup")}>
-            Sign up
           </Button>
         </div>
       )}
@@ -320,28 +311,6 @@ return (
 )
 }
 
-function BlogIcon(props: IconProps) {
-return (
-<svg
-  {...props}
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  strokeWidth="2"
-  strokeLinecap="round"
-  strokeLinejoin="round"
->
-  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-  <polyline points="14 2 14 8 20 8" />
-  <line x1="16" y1="13" x2="8" y2="13" />
-  <line x1="16" y1="17" x2="8" y2="17" />
-  <polyline points="10 9 9 9 8 9" />
-</svg>
-)
-}
 
 function ContactIcon(props: IconProps) {
 return (
