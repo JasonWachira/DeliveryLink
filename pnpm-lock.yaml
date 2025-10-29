@@ -63,6 +63,12 @@ importers:
       '@deliverylink/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@radix-ui/react-avatar':
+        specifier: ^1.1.10
+        version: 1.1.10(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@radix-ui/react-dialog':
+        specifier: ^1.1.15
+        version: 1.1.15(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/react-form':
         specifier: ^1.12.3
         version: 1.23.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
