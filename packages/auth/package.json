@@ -15,15 +15,17 @@
     "build": "tsdown"
   },
   "devDependencies": {
+    "@types/nodemailer": "^7.0.3",
     "tsdown": "catalog:"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
+    "@deliverylink/db": "workspace:*",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
-    "zod": "catalog:",
-    "@deliverylink/db": "workspace:*"
+    "nodemailer": "^7.0.10",
+    "zod": "catalog:"
   }
 }
