@@ -5,8 +5,6 @@
 		"declarationMap": true,
 		"sourceMap": true,
 		"outDir": "dist",
-		"composite": true,
-		"noUnusedLocals": false,
-    	"noUnusedParameters": false
+		"composite": true
 	}
 }
