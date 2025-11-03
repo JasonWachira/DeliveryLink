@@ -1,4 +1,5 @@
 // packages/db/src/schema/index.ts
+// Defines the relations between different database tables
 
 import { relations } from "drizzle-orm";
 
@@ -10,8 +11,24 @@ import { items } from "./items";
 import { orderItems } from "./orderItems";
 import { financialTransactions } from "./financialTransactions";
 import { deliveryUpdates } from "./deliveryUpdate";
+import { user } from "./auth";
 
-export const customerRelations = relations(customers, ({ many }) => ({
+export const userRelations = relations(user, ({ one }) => ({
+    
+    customerProfile: one(customers, {
+        fields: [user.id],
+        references: [customers.userId],
+    }),
+}));
+
+
+export const customerRelations = relations(customers, ({ many, one }) => ({
+    
+    user: one(user, {
+        fields: [customers.userId],
+        references: [user.id],
+    }),
+    
     
     orders: many(orders),
 }));

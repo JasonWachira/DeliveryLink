@@ -6,6 +6,10 @@
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
+    "./schema": { 
+      "import": "./dist/schemas.js", 
+      "types": "./dist/schemas.d.ts"
+    },
     "./*": {
       "types": "./dist/*.d.ts",
       "default": "./src/*.ts"
