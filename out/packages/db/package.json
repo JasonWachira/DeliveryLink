@@ -6,10 +6,6 @@
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
-    "./schema": { 
-      "import": "./dist/schemas.js", 
-      "types": "./dist/schemas.d.ts"
-    },
     "./*": {
       "types": "./dist/*.d.ts",
       "default": "./src/*.ts"
@@ -28,7 +24,7 @@
   },
   "devDependencies": {
     "@types/pg": "^8.11.11",
-    "drizzle-kit": "^0.30.1",
+    "drizzle-kit": "^0.31.6",
     "tsdown": "catalog:"
   },
   "peerDependencies": {
@@ -36,7 +32,7 @@
   },
   "dependencies": {
     "dotenv": "catalog:",
-    "drizzle-orm": "^0.44.7",
+    "drizzle-orm": "catalog:",
     "pg": "^8.14.1",
     "zod": "catalog:"
   }
