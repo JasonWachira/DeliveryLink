@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { Raleway } from "next/font/google";
 import "../index.css";
@@ -5,6 +6,7 @@ import Providers from "@/components/providers";
 import Header from "@/components/header";
 import { Toaster } from "@/components/ui/sonner"
 
+import LayoutWrapper from "./layout-wrapper";
 const raleway = Raleway({
 	variable: "--font-raleway",
 	subsets: ["latin"],
@@ -16,25 +18,20 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-	children,
+  children,
 }: Readonly<{
-	children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-	return (
-		<html lang="en" suppressHydrationWarning>
-			<body
-				className={`${raleway.variable} antialiased`}
-			>
-				<Providers>
-					<div className="grid grid-rows-[auto_1fr] h-svh">
-						<Header />
-			   <main className="pt-20">
-              {children}
-            </main>
-                  <Toaster />
-					</div>
-				</Providers>
-			</body>
-		</html>
-	);
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${raleway.variable} antialiased`}>
+        <Providers>
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
+          <Toaster />
+        </Providers>
+      </body>
+    </html>
+  );
 }
