@@ -1,0 +1,23 @@
+name: deliverylink
+
+services:
+  postgres:
+    image: postgres
+    container_name: deliverylink-postgres
+    environment:
+      POSTGRES_DB: deliverylink
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Jason
+    ports:
+      - "5432:5432"
+    volumes:
+      - deliverylink_postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  deliverylink_postgres_data:

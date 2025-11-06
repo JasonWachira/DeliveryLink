@@ -1,0 +1,37 @@
+{
+  "name": "deliverylink",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "check": "biome check --write .",
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:native": "turbo -F native dev",
+    "dev:web": "turbo -F web dev",
+    "db:push": "turbo -F @deliverylink/db db:push",
+    "db:studio": "turbo -F @deliverylink/db db:studio",
+    "db:generate": "turbo -F @deliverylink/db db:generate",
+    "db:migrate": "turbo -F @deliverylink/db db:migrate",
+    "db:start": "turbo -F @deliverylink/db db:start",
+    "db:watch": "turbo -F @deliverylink/db db:watch",
+    "db:stop": "turbo -F @deliverylink/db db:stop",
+    "db:down": "turbo -F @deliverylink/db db:down"
+  },
+  "dependencies": {
+    "@radix-ui/react-separator": "^1.1.7",
+    "dotenv": "^17.2.2",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.0",
+    "@types/node": "^22.13.11",
+    "tsdown": "^0.15.5",
+    "turbo": "^2.5.4"
+  },
+  "packageManager": "pnpm@9.12.0"
+}
