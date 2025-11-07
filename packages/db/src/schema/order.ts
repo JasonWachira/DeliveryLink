@@ -2,24 +2,19 @@ import { pgTable, text, timestamp, boolean, serial, integer, numeric } from "dri
 import { customers } from "./customer";
 import {businesses} from "./businesses";
 import {drivers} from "./drivers";
-
+import {user} from "./auth";
 export const orders = pgTable("order", {
-  // *order_id 
   orderId: serial("order_id").primaryKey(),
-
-  // Foreign Keys (Relationships)
-  customerId: integer("customer_id")
-    .references(() => customers.customerId) // Customer 'places' Order
+  customerId: text("customer_id")
+    .references(() => user.id)
     .notNull(),
-    
-  businessId: integer("business_id")
-    .references(() => businesses.businessId) // Order 'receives' Business
+  businessId: text("business_id")
+    .references(() => user.id)
     .notNull(),
-
-  driverId: integer("driver_id").references(() => drivers.driverId), // Driver 'handles' Order
-
-  // Attributes
-  timePlaced: timestamp("time_placed").defaultNow().notNull(), // time_placed 
-  contents: text("contents"), // contents 
-  cost: numeric("cost").notNull(), // cost 
+  pickUpLocation: text("pick_up_location").notNull(),
+  dropOffLocation: text("drop_off_location").notNull(),
+  driverId: integer("driver_id").references(() => drivers.driverId),
+  timePlaced: timestamp("time_placed").defaultNow().notNull(),
+  contents: text("contents"),
+  cost: numeric("cost").notNull(),
 });
