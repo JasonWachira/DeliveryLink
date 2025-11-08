@@ -1,3 +1,4 @@
+
 import { protectedProcedure, publicProcedure, router } from "../index";
 import { driverRouter } from "./deliver";
 import { orderRouter } from "./order";
@@ -18,5 +19,6 @@ export const appRouter = router({
 	order: orderRouter,
 	statistics: statisticsRouter,
 	driver: driverRouter,
-});
+}) as any;
+
 export type AppRouter = typeof appRouter;

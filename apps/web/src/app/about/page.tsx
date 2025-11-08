@@ -260,14 +260,14 @@ export default function AboutPage() {
                 >
                   Start Your First Order
                 </Button>
-                <Button
+                {/*<Button
                   size="lg"
                   variant="outline"
                   className="text-base px-8"
                   onClick={() => router.push("/contact")}
                 >
                   Get in Touch
-                </Button>
+                </Button>*/}
               </div>
             </CardContent>
           </Card>

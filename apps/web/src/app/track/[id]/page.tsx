@@ -548,11 +548,16 @@ export default function TrackOrderPage() {
                                   <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                                     {format(new Date(event.timestamp), "MMM dd, yyyy 'at' h:mm a")}
                                   </p>
-                                  {event.eventData && Object.keys(event.eventData).length > 0 && (
-                                    <div className="mt-2 text-xs bg-background rounded p-2 font-mono overflow-x-auto">
-                                      {JSON.stringify(event.eventData, null, 2)}
-                                    </div>
-                                  )}
+                                  {(() => {
+                                    if (event.eventData && Object.keys(event.eventData).length > 0) {
+                                      return (
+                                        <div className="mt-2 text-xs bg-background rounded p-2 font-mono overflow-x-auto">
+                                          {JSON.stringify(event.eventData, null, 2)}
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  })()}
                                 </div>
                               </div>
                             </div>

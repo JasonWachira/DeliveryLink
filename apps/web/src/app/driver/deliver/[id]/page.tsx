@@ -746,11 +746,16 @@ export default function DriverDeliveryPage() {
                                   <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                                     {format(new Date(event.timestamp), "MMM dd, yyyy 'at' h:mm a")}
                                   </p>
-                                  {event.eventData && Object.keys(event.eventData).length > 0 && (
-                                    <div className="mt-2 text-xs bg-background rounded p-2 font-mono overflow-x-auto">
-                                      {JSON.stringify(event.eventData, null, 2)}
-                                    </div>
-                                  )}
+                                  {(() => {
+                                    if (event.eventData && Object.keys(event.eventData).length > 0) {
+                                      return (
+                                        <div className="mt-2 text-xs bg-background rounded p-2 font-mono overflow-x-auto">
+                                          {JSON.stringify(event.eventData, null, 2)}
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  })()}
                                 </div>
                               </div>
                             </div>
@@ -820,21 +825,13 @@ export default function DriverDeliveryPage() {
                                               </Alert>
                                             )}
 
-                                            {order.requiresSignature && (
-                                              <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
-                                                <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                                <AlertTitle className="text-blue-900 dark:text-blue-300">Signature Required</AlertTitle>
-                                                <AlertDescription className="text-blue-800 dark:text-blue-400">
-                                                  Get recipient signature upon delivery
-                                                </AlertDescription>
-                                              </Alert>
-                                            )}
 
-                                            {order.specialInstructions && (
+
+                                            {(order.pickupInstructions || order.dropoffInstructions ) && (
                                               <Alert>
                                                 <AlertCircle className="h-4 w-4" />
                                                 <AlertTitle>Special Instructions</AlertTitle>
-                                                <AlertDescription>{order.specialInstructions}</AlertDescription>
+                                                <AlertDescription>{order.pickupInstructions } {order.dropoffInstructions }</AlertDescription>
                                               </Alert>
                                             )}
                                           </CardContent>

@@ -435,7 +435,7 @@ export default function OrdersPage() {
                           </p>
                           <Button
                             variant="outline"
-                            onClick={() => router.push("/orders/new")}
+                            onClick={() => router.push("/dashboard/start-order")}
                           >
                             Create your first order
                           </Button>

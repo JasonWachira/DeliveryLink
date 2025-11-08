@@ -49,7 +49,7 @@ export default function HomePage() {
                 size="lg"
                 variant="outline"
                 className="text-base px-8"
-                onClick={() => router.push("/track-order")}
+                onClick={() => router.push("/track")}
               >
                 Track an Order
               </Button>
@@ -165,7 +165,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   className="text-base px-8"
-                  onClick={() => router.push("/start-order")}
+                  onClick={() => router.push("/dashboard/start-order")}
                 >
                   Get Started Now
                 </Button>
@@ -173,7 +173,7 @@ export default function HomePage() {
                   size="lg"
                   variant="outline"
                   className="text-base px-8"
-                  onClick={() => router.push("/track-order")}
+                  onClick={() => router.push("/track")}
                 >
                   Track an Order
                 </Button>

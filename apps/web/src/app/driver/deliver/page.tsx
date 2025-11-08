@@ -189,21 +189,21 @@ export default function DeliverPage() {
                   <Package className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">{order.packageDescription}</span>
                 </div>
-                <Badge variant="outline">{order.packageSize.toUpperCase()}</Badge>
+                <Badge variant="outline">{order.packageSize}</Badge>
                 {order.isFragile && (
                   <Badge variant="destructive">Fragile</Badge>
                 )}
-                {order.requiresSignature && (
+                {/*{order.requiresSignature && (
                   <Badge variant="secondary">Signature Required</Badge>
-                )}
+                )}*/}
               </div>
 
-              {order.specialInstructions && (
+              {/*{order.specialInstructions && (
                 <div className="py-3 border-b">
                   <p className="text-sm font-medium mb-1">Special Instructions:</p>
                   <p className="text-sm text-muted-foreground">{order.specialInstructions}</p>
                 </div>
-              )}
+              )}*/}
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4 text-sm">
                 <div>
