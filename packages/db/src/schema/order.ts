@@ -110,3 +110,11 @@ export const orderRatings = pgTable("order_ratings", {
   driverRating: integer("driver_rating"),
   ratedAt: timestamp("rated_at").defaultNow().notNull(),
 });
+export const otpCode = pgTable("otp_code", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id")
+    .references(() => orders.orderId)
+    .notNull(),
+  otp: varchar("otp", { length: 6 }).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+});

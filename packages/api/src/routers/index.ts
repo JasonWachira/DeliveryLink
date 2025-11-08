@@ -1,5 +1,7 @@
 import { protectedProcedure, publicProcedure, router } from "../index";
+import { driverRouter } from "./deliver";
 import { orderRouter } from "./order";
+import { statisticsRouter } from "./statistics";
 import { todoRouter } from "./todo";
 
 export const appRouter = router({
@@ -13,6 +15,8 @@ export const appRouter = router({
 		};
 	}),
 	todo: todoRouter,
-	order: orderRouter
+	order: orderRouter,
+	statistics: statisticsRouter,
+	driver: driverRouter,
 });
 export type AppRouter = typeof appRouter;

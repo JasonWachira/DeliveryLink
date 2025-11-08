@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { authClient } from "../lib/auth-client"
 import { ModeToggle } from "./mode-toggle"
 import { usePathname, useRouter } from "next/navigation"
-import { Menu, Home, Info, Calendar, Building, User, LogOut } from "lucide-react"
+import { Menu, Home, Info, Calendar, Building, User, LogOut, Car, Package } from "lucide-react"
 
 export default function Header() {
 const pathname = usePathname()
@@ -81,7 +81,15 @@ prefetch={false}
 <span className="font-medium">Start Order</span>
 </Link>
 <Link
-href="/track-order"
+href="/driver/deliver"
+className="flex items-center gap-3 py-3 px-4 rounded-lg hover:bg-accent text-foreground transition-colors"
+prefetch={false}
+>
+<Package className="h-5 w-5" />
+<span className="font-medium">Deliver</span>
+</Link>
+<Link
+href="/track"
 className="flex items-center gap-3 py-3 px-4 rounded-lg hover:bg-accent text-foreground transition-colors"
 prefetch={false}
 >
@@ -105,7 +113,10 @@ prefetch={false}
  <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 whitespace-nowrap text-xs xl:text-sm px-3 xl:px-4" onClick={() => router.push("/dashboard/start-order")}>
 Start Order
 </Button>
-<Button variant="outline" size="sm" className="whitespace-nowrap text-xs xl:text-sm px-3 xl:px-4" onClick={() => router.push("/track-order")}>
+<Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 whitespace-nowrap text-xs xl:text-sm px-3 xl:px-4" onClick={() => router.push("/driver/deliver")}>
+Deliver
+</Button>
+<Button variant="outline" size="sm" className="whitespace-nowrap text-xs xl:text-sm px-3 xl:px-4" onClick={() => router.push("/track")}>
 Track Order
 </Button>
 </nav>
@@ -134,15 +145,15 @@ Track Order
                 <p className="text-xs text-muted-foreground">{session.user?.email}</p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push("/profile")}>
+            {/*<DropdownMenuSeparator />*/}
+            {/*<DropdownMenuItem onClick={() => router.push("/profile")}>
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push("/booking")}>
               <Calendar className="mr-2 h-4 w-4" />
               <span>My Orders</span>
-            </DropdownMenuItem>
+            </DropdownMenuItem>*/}
             <DropdownMenuSeparator />
             <DropdownMenuItem  onClick={() => authClient.signOut()}>
               <LogOut className="mr-2 h-4 w-4" />

@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { trpc } from "@/utils/trpc";
 import { useMutation } from "@tanstack/react-query";
-import { MapPin, Package, User, Phone, Clock, AlertCircle, Navigation } from "lucide-react";
+import { MapPin, Package, User, Phone, Navigation, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface LocationSuggestion {
@@ -22,10 +22,11 @@ interface LocationSuggestion {
   osm_id: string;
 }
 
-interface LocationData {
-  address: string;
-  lat: number;
-  lng: number;
+interface DistanceData {
+  distance: number;
+  distanceInMeters: number;
+  duration: number;
+  durationInSeconds: number;
 }
 
 export default function StartOrderPage() {
@@ -61,6 +62,12 @@ export default function StartOrderPage() {
   const [priority, setPriority] = useState<"normal" | "urgent" | "scheduled">("normal");
   const [isFragile, setIsFragile] = useState(false);
   const [scheduledPickupTime, setScheduledPickupTime] = useState("");
+
+  const [distanceData, setDistanceData] = useState<DistanceData | null>(null);
+  const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
+  const [estimatedCost, setEstimatedCost] = useState(0);
+  const [platformFee, setPlatformFee] = useState(0);
+  const [totalCost, setTotalCost] = useState(0);
 
   const pickupInputRef = useRef<HTMLInputElement>(null);
   const dropoffInputRef = useRef<HTMLInputElement>(null);
@@ -104,6 +111,58 @@ export default function StartOrderPage() {
 
     loadDefaultLocations();
   }, []);
+
+  const calculateDistance = async () => {
+    if (!pickupLat || !pickupLng || !dropoffLat || !dropoffLng) {
+      return;
+    }
+
+    setIsCalculatingDistance(true);
+
+    try {
+      const response = await fetch(
+        `/api/geocode/distance?pickupLat=${pickupLat}&pickupLng=${pickupLng}&dropoffLat=${dropoffLat}&dropoffLng=${dropoffLng}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to calculate distance");
+      }
+
+      const data = await response.json();
+      setDistanceData(data);
+
+      const baseFee = 100;
+      const perKmRate = 20;
+      const urgentMultiplier = 1.5;
+
+      let deliveryFee = baseFee + (data.distance * perKmRate);
+
+      if (priority === 'urgent') {
+        deliveryFee = deliveryFee * urgentMultiplier;
+      }
+
+      deliveryFee = Math.round(deliveryFee);
+
+      const platFee = deliveryFee * 0.15;
+      const total = deliveryFee + platFee;
+
+      setEstimatedCost(deliveryFee);
+      setPlatformFee(platFee);
+      setTotalCost(total);
+
+    } catch (error) {
+      console.error("Distance calculation error:", error);
+      toast.error("Failed to calculate distance");
+    } finally {
+      setIsCalculatingDistance(false);
+    }
+  };
+
+  useEffect(() => {
+    if (pickupLat && pickupLng && dropoffLat && dropoffLng) {
+      calculateDistance();
+    }
+  }, [pickupLat, pickupLng, dropoffLat, dropoffLng, priority]);
 
   const searchLocation = async (query: string, type: "pickup" | "dropoff") => {
     if (query.length < 3) {
@@ -279,6 +338,10 @@ export default function StartOrderPage() {
       toast.error("Please enter a valid phone number");
       return false;
     }
+    if (!pickupLat || !pickupLng) {
+      toast.error("Please select a valid pickup location from the suggestions");
+      return false;
+    }
     return true;
   };
 
@@ -291,12 +354,20 @@ export default function StartOrderPage() {
       toast.error("Please enter a valid phone number");
       return false;
     }
+    if (!dropoffLat || !dropoffLng) {
+      toast.error("Please select a valid dropoff location from the suggestions");
+      return false;
+    }
     return true;
   };
 
   const validateStep3 = () => {
     if (!packageDescription || packageQuantity < 1) {
       toast.error("Please fill all package details");
+      return false;
+    }
+    if (!distanceData) {
+      toast.error("Distance calculation failed. Please try again.");
       return false;
     }
     return true;
@@ -309,6 +380,11 @@ export default function StartOrderPage() {
   };
 
   const handleSubmit = async () => {
+    if (!pickupLat || !pickupLng || !dropoffLat || !dropoffLng || !distanceData) {
+      toast.error("Missing required location data");
+      return;
+    }
+
     const loadingToast = toast.loading("Creating your order...");
 
     try {
@@ -333,16 +409,14 @@ export default function StartOrderPage() {
         priority,
         isFragile,
         scheduledPickupTime: scheduledPickupTime ? new Date(scheduledPickupTime) : undefined,
+        distanceInKm: distanceData.distance,
+        estimatedTimeInMinutes: distanceData.duration
       });
       toast.dismiss(loadingToast);
     } catch (error) {
       toast.dismiss(loadingToast);
     }
   };
-
-  const estimatedCost = priority === "urgent" ? 300 : 200;
-  const platformFee = estimatedCost * 0.15;
-  const totalCost = estimatedCost + platformFee;
 
   return (
     <div className="min-h-screen bg-background py-8 px-4">
@@ -548,293 +622,342 @@ export default function StartOrderPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="dropoffLocation">Delivery Location</Label>
-                  <div className="relative">
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
-                      <Input
-                        ref={dropoffInputRef}
-                        id="dropoffLocation"
-                        placeholder="Search for a location..."
-                        value={dropoffQuery}
-                        onChange={(e) => {
-                          setDropoffQuery(e.target.value);
-                          setShowDropoffSuggestions(true);
-                        }}
-                        onFocus={() => setShowDropoffSuggestions(true)}
-                        className="pl-10 pr-12"
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="absolute right-1 top-1 h-8 w-8 p-0 z-10"
-                        onClick={() => getCurrentLocation("dropoff")}
-                      >
-                        <Navigation className="h-4 w-4" />
-                      </Button>
-                    </div>
+                                  <Label htmlFor="dropoffLocation">Delivery Location</Label>
+                                  <div className="relative">
+                                    <div className="relative">
+                                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                                      <Input
+                                        ref={dropoffInputRef}
+                                        id="dropoffLocation"
+                                        placeholder="Search for a location..."
+                                        value={dropoffQuery}
+                                        onChange={(e) => {
+                                          setDropoffQuery(e.target.value);
+                                          setShowDropoffSuggestions(true);
+                                        }}
+                                        onFocus={() => setShowDropoffSuggestions(true)}
+                                        className="pl-10 pr-12"
+                                      />
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="ghost"
+                                        className="absolute right-1 top-1 h-8 w-8 p-0 z-10"
+                                        onClick={() => getCurrentLocation("dropoff")}
+                                      >
+                                        <Navigation className="h-4 w-4" />
+                                      </Button>
+                                    </div>
 
-                    {showDropoffSuggestions && dropoffSuggestions.length > 0 && (
-                      <Card className="absolute z-50 w-full mt-1">
-                        <CardContent className="p-2">
-                          {dropoffSuggestions.map((suggestion) => (
-                            <button
-                              key={suggestion.place_id}
-                              className="w-full text-left p-3 hover:bg-muted rounded-md transition-colors"
-                              onClick={() => selectLocation(
-                                suggestion.place_id,
-                                suggestion.osm_type,
-                                suggestion.osm_id,
-                                "dropoff"
-                              )}
-                            >
-                              <div className="font-medium">{suggestion.main_text}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {suggestion.secondary_text}
+                                    {showDropoffSuggestions && dropoffSuggestions.length > 0 && (
+                                      <Card className="absolute z-50 w-full mt-1">
+                                        <CardContent className="p-2">
+                                          {dropoffSuggestions.map((suggestion) => (
+                                            <button
+                                              key={suggestion.place_id}
+                                              className="w-full text-left p-3 hover:bg-muted rounded-md transition-colors"
+                                              onClick={() => selectLocation(
+                                                suggestion.place_id,
+                                                suggestion.osm_type,
+                                                suggestion.osm_id,
+                                                "dropoff"
+                                              )}
+                                            >
+                                              <div className="font-medium">{suggestion.main_text}</div>
+                                              <div className="text-sm text-muted-foreground">
+                                                {suggestion.secondary_text}
+                                              </div>
+                                            </button>
+                                          ))}
+                                        </CardContent>
+                                      </Card>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label htmlFor="dropoffInstructions">
+                                    Delivery Instructions (Optional)
+                                  </Label>
+                                  <Textarea
+                                    id="dropoffInstructions"
+                                    placeholder="E.g., Leave at reception, call on arrival..."
+                                    value={dropoffInstructions}
+                                    onChange={(e) => setDropoffInstructions(e.target.value)}
+                                    rows={3}
+                                  />
+                                </div>
                               </div>
-                            </button>
-                          ))}
-                        </CardContent>
-                      </Card>
-                    )}
-                  </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="dropoffInstructions">
-                    Delivery Instructions (Optional)
-                  </Label>
-                  <Textarea
-                    id="dropoffInstructions"
-                    placeholder="E.g., Leave at reception, call on arrival..."
-                    value={dropoffInstructions}
-                    onChange={(e) => setDropoffInstructions(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-              </div>
+                              <div className="flex justify-between">
+                                <Button variant="outline" onClick={() => setStep(1)}>
+                                  Back
+                                </Button>
+                                <Button onClick={handleNext} size="lg">
+                                  Continue to Package Details
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
 
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep(1)}>
-                  Back
-                </Button>
-                <Button onClick={handleNext} size="lg">
-                  Continue to Package Details
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                        {step === 3 && (
+                          <Card>
+                            <CardContent className="p-6 space-y-6">
+                              <div className="flex items-center gap-2 mb-4">
+                                <Package className="h-5 w-5 text-primary" />
+                                <h2 className="text-xl font-semibold">Package Details</h2>
+                              </div>
 
-        {step === 3 && (
-          <Card>
-            <CardContent className="p-6 space-y-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Package className="h-5 w-5 text-primary" />
-                <h2 className="text-xl font-semibold">Package Details</h2>
-              </div>
+                              <div className="space-y-4">
+                                <div className="space-y-2">
+                                  <Label htmlFor="packageDescription">Package Description</Label>
+                                  <Textarea
+                                    id="packageDescription"
+                                    placeholder="What are you sending?"
+                                    value={packageDescription}
+                                    onChange={(e) => setPackageDescription(e.target.value)}
+                                    rows={3}
+                                  />
+                                </div>
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="packageDescription">Package Description</Label>
-                  <Textarea
-                    id="packageDescription"
-                    placeholder="What are you sending?"
-                    value={packageDescription}
-                    onChange={(e) => setPackageDescription(e.target.value)}
-                    rows={3}
-                  />
-                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label htmlFor="packageWeight">Weight (kg) - Optional</Label>
+                                    <Input
+                                      id="packageWeight"
+                                      type="number"
+                                      step="0.1"
+                                      placeholder="0.5"
+                                      value={packageWeight}
+                                      onChange={(e) => setPackageWeight(e.target.value)}
+                                    />
+                                  </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="packageWeight">Weight (kg) - Optional</Label>
-                    <Input
-                      id="packageWeight"
-                      type="number"
-                      step="0.1"
-                      placeholder="0.5"
-                      value={packageWeight}
-                      onChange={(e) => setPackageWeight(e.target.value)}
-                    />
-                  </div>
+                                  <div className="space-y-2">
+                                    <Label htmlFor="packageValue">Value (KES) - Optional</Label>
+                                    <Input
+                                      id="packageValue"
+                                      type="number"
+                                      placeholder="5000"
+                                      value={packageValue}
+                                      onChange={(e) => setPackageValue(e.target.value)}
+                                    />
+                                  </div>
+                                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="packageValue">Value (KES) - Optional</Label>
-                    <Input
-                      id="packageValue"
-                      type="number"
-                      placeholder="5000"
-                      value={packageValue}
-                      onChange={(e) => setPackageValue(e.target.value)}
-                    />
-                  </div>
-                </div>
+                                <div className="space-y-2">
+                                  <Label>Package Size</Label>
+                                  <RadioGroup value={packageSize} onValueChange={(v) => setPackageSize(v as any)}>
+                                    <div className="grid grid-cols-3 gap-4">
+                                      <label className="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-muted">
+                                        <RadioGroupItem value="small" className="mb-2" />
+                                        <Package className="h-6 w-6 mb-1" />
+                                        <span className="text-sm font-medium">Small</span>
+                                        <span className="text-xs text-muted-foreground">Up to 2kg</span>
+                                      </label>
+                                      <label className="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-muted">
+                                        <RadioGroupItem value="medium" className="mb-2" />
+                                        <Package className="h-8 w-8 mb-1" />
+                                        <span className="text-sm font-medium">Medium</span>
+                                        <span className="text-xs text-muted-foreground">Up to 10kg</span>
+                                      </label>
+                                      <label className="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-muted">
+                                        <RadioGroupItem value="large" className="mb-2" />
+                                        <Package className="h-10 w-10 mb-1" />
+                                        <span className="text-sm font-medium">Large</span>
+                                        <span className="text-xs text-muted-foreground">Over 10kg</span>
+                                      </label>
+                                    </div>
+                                  </RadioGroup>
+                                </div>
 
-                <div className="space-y-2">
-                  <Label>Package Size</Label>
-                  <RadioGroup value={packageSize} onValueChange={(v) => setPackageSize(v as any)}>
-                    <div className="grid grid-cols-3 gap-4">
-                      <label className="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-muted">
-                        <RadioGroupItem value="small" className="mb-2" />
-                        <Package className="h-6 w-6 mb-1" />
-                        <span className="text-sm font-medium">Small</span>
-                        <span className="text-xs text-muted-foreground">Up to 2kg</span>
-                      </label>
-                      <label className="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-muted">
-                        <RadioGroupItem value="medium" className="mb-2" />
-                        <Package className="h-8 w-8 mb-1" />
-                        <span className="text-sm font-medium">Medium</span>
-                        <span className="text-xs text-muted-foreground">Up to 10kg</span>
-                      </label>
-                      <label className="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-muted">
-                        <RadioGroupItem value="large" className="mb-2" />
-                        <Package className="h-10 w-10 mb-1" />
-                        <span className="text-sm font-medium">Large</span>
-                        <span className="text-xs text-muted-foreground">Over 10kg</span>
-                      </label>
+                                <div className="space-y-2">
+                                  <Label>Delivery Priority</Label>
+                                  <RadioGroup value={priority} onValueChange={(v) => setPriority(v as any)}>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted">
+                                        <RadioGroupItem value="normal" />
+                                        <div>
+                                          <div className="font-medium">Normal</div>
+                                          <div className="text-sm text-muted-foreground">Standard delivery</div>
+                                        </div>
+                                      </label>
+                                      <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted">
+                                        <RadioGroupItem value="urgent" />
+                                        <div>
+                                          <div className="font-medium">Urgent</div>
+                                          <div className="text-sm text-muted-foreground">1.5x price</div>
+                                        </div>
+                                      </label>
+                                    </div>
+                                  </RadioGroup>
+                                </div>
+
+                                <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                                  <input
+                                    type="checkbox"
+                                    id="isFragile"
+                                    checked={isFragile}
+                                    onChange={(e) => setIsFragile(e.target.checked)}
+                                    className="h-4 w-4"
+                                  />
+                                  <Label htmlFor="isFragile" className="cursor-pointer">
+                                    Package is fragile (handle with care)
+                                  </Label>
+                                </div>
+                              </div>
+
+                              {isCalculatingDistance && (
+                                <Card className="bg-muted">
+                                  <CardContent className="p-4">
+                                    <div className="flex items-center justify-center space-x-2">
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                      <span className="text-sm">Calculating delivery cost...</span>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              )}
+
+                              {distanceData && !isCalculatingDistance && (
+                                <Card className="bg-muted">
+                                  <CardContent className="p-4">
+                                    <div className="space-y-3">
+                                      <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Distance</span>
+                                        <span className="font-medium">{distanceData.distance.toFixed(2)} km</span>
+                                      </div>
+                                      <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Estimated Time</span>
+                                        <span className="font-medium">{distanceData.duration} min</span>
+                                      </div>
+                                      <div className="border-t pt-3 space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                          <span>Base Fee</span>
+                                          <span>KES 100</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                          <span>Distance Fee (KES 20/km)</span>
+                                          <span>KES {Math.round(distanceData.distance * 20)}</span>
+                                        </div>
+                                        {priority === 'urgent' && (
+                                          <div className="flex justify-between text-sm text-orange-600">
+                                            <span>Urgent Multiplier (1.5x)</span>
+                                            <span>Applied</span>
+                                          </div>
+                                        )}
+                                        <div className="flex justify-between text-sm">
+                                          <span>Delivery Fee</span>
+                                          <span>KES {estimatedCost}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                          <span>Platform Fee (15%)</span>
+                                          <span>KES {platformFee.toFixed(2)}</span>
+                                        </div>
+                                        <div className="border-t pt-2 flex justify-between font-bold">
+                                          <span>Total</span>
+                                          <span>KES {totalCost.toFixed(2)}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              )}
+
+                              <div className="flex justify-between">
+                                <Button variant="outline" onClick={() => setStep(2)}>
+                                  Back
+                                </Button>
+                                <Button
+                                  onClick={handleNext}
+                                  size="lg"
+                                  disabled={placeOrderMutation.isPending || isCalculatingDistance || !distanceData}
+                                >
+                                  {placeOrderMutation.isPending ? "Creating Order..." : "Place Order"}
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {step === 4 && (
+                          <Card>
+                            <CardContent className="p-8 text-center space-y-6">
+                              <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                                <svg
+                                  className="w-8 h-8 text-green-600 dark:text-green-400"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              </div>
+
+                              <div>
+                                <h2 className="text-2xl font-bold mb-2">Order Created Successfully!</h2>
+                                <p className="text-muted-foreground">
+                                  Your order has been placed and a rider will be assigned shortly.
+                                </p>
+                              </div>
+
+                              <Card className="bg-muted text-left">
+                                <CardContent className="p-4 space-y-3">
+                                  <div>
+                                    <p className="text-sm text-muted-foreground">Order Number</p>
+                                    <p className="text-lg font-bold">{orderNumber}</p>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+                                    <div>
+                                      <p className="text-xs text-muted-foreground">From</p>
+                                      <p className="text-sm font-medium truncate">{pickupContactName}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs text-muted-foreground">To</p>
+                                      <p className="text-sm font-medium truncate">{dropoffContactName}</p>
+                                    </div>
+                                  </div>
+                                  {distanceData && (
+                                    <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+                                      <div>
+                                        <p className="text-xs text-muted-foreground">Distance</p>
+                                        <p className="text-sm font-medium">{distanceData.distance.toFixed(2)} km</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs text-muted-foreground">Total Cost</p>
+                                        <p className="text-sm font-medium">KES {totalCost.toFixed(2)}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+
+                              <div className="space-y-3">
+                                <Button
+                                  size="lg"
+                                  className="w-full"
+                                  onClick={() => router.push(`/dashboard`)}
+                                >
+                                  View Order Details
+                                </Button>
+                                <Button
+                                  size="lg"
+                                  variant="outline"
+                                  className="w-full"
+                                  onClick={() => window.location.reload()}
+                                >
+                                  Place Another Order
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+                      </div>
                     </div>
-                  </RadioGroup>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Delivery Priority</Label>
-                  <RadioGroup value={priority} onValueChange={(v) => setPriority(v as any)}>
-                    <div className="grid grid-cols-2 gap-4">
-                      <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted">
-                        <RadioGroupItem value="normal" />
-                        <div>
-                          <div className="font-medium">Normal</div>
-                          <div className="text-sm text-muted-foreground">KES 200</div>
-                        </div>
-                      </label>
-                      <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted">
-                        <RadioGroupItem value="urgent" />
-                        <div>
-                          <div className="font-medium">Urgent</div>
-                          <div className="text-sm text-muted-foreground">KES 300</div>
-                        </div>
-                      </label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                  <input
-                    type="checkbox"
-                    id="isFragile"
-                    checked={isFragile}
-                    onChange={(e) => setIsFragile(e.target.checked)}
-                    className="h-4 w-4"
-                  />
-                  <Label htmlFor="isFragile" className="cursor-pointer">
-                    Package is fragile (handle with care)
-                  </Label>
-                </div>
-              </div>
-
-              <Card className="bg-muted">
-                <CardContent className="p-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Delivery Fee</span>
-                      <span>KES {estimatedCost}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Platform Fee</span>
-                      <span>KES {platformFee.toFixed(2)}</span>
-                    </div>
-                    <div className="border-t pt-2 flex justify-between font-bold">
-                      <span>Total</span>
-                      <span>KES {totalCost.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep(2)}>
-                  Back
-                </Button>
-                <Button
-                  onClick={handleNext}
-                  size="lg"
-                  disabled={placeOrderMutation.isPending}
-                >
-                  {placeOrderMutation.isPending ? "Creating Order..." : "Place Order"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {step === 4 && (
-          <Card>
-            <CardContent className="p-8 text-center space-y-6">
-              <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-8 h-8 text-green-600 dark:text-green-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
-
-              <div>
-                <h2 className="text-2xl font-bold mb-2">Order Created Successfully!</h2>
-                <p className="text-muted-foreground">
-                  Your order has been placed and a rider will be assigned shortly.
-                </p>
-              </div>
-
-              <Card className="bg-muted text-left">
-                <CardContent className="p-4 space-y-3">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Order Number</p>
-                    <p className="text-lg font-bold">{orderNumber}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 pt-2 border-t">
-                    <div>
-                      <p className="text-xs text-muted-foreground">From</p>
-                      <p className="text-sm font-medium truncate">{pickupContactName}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">To</p>
-                      <p className="text-sm font-medium truncate">{dropoffContactName}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="space-y-3">
-                <Button
-                  size="lg"
-                  className="w-full"
-                  onClick={() => router.push(`/dashboard`)}
-                >
-                  View Order Details
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => window.location.reload()}
-                >
-                  Place Another Order
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    </div>
-  );
-}
+                  );
+                }
