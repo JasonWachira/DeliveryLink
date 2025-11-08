@@ -94,7 +94,7 @@ export default function DeliverPage() {
                   {availableOrders.data.activeDelivery.packageDescription}
                 </p>
               </div>
-              <Button onClick={() => router.push(`/deliver/${availableOrders.data.activeDelivery?.orderId}`)}>
+              <Button onClick={() => router.push(`/driver/deliver/${availableOrders.data.activeDelivery?.orderId}`)}>
                 Continue Delivery
               </Button>
             </div>

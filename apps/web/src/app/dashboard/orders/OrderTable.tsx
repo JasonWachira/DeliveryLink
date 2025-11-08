@@ -214,7 +214,7 @@ export default function OrdersPage() {
                 </CardDescription>
               </div>
               <Button
-                onClick={() => router.push("/orders/new")}
+                onClick={() => router.push("/dashboard/start-order")}
                 className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
               >
                 <Package className="mr-2 h-4 w-4" />

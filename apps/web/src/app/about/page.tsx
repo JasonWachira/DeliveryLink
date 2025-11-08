@@ -256,7 +256,7 @@ export default function AboutPage() {
                 <Button
                   size="lg"
                   className="text-base px-8"
-                  onClick={() => router.push("/start-order")}
+                  onClick={() => router.push("/dashboard/start-order")}
                 >
                   Start Your First Order
                 </Button>
