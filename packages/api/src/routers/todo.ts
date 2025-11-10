@@ -8,7 +8,6 @@ export const todoRouter = router({
 	getAll: publicProcedure.query(async () => {
 		return await db.select().from(todo);
 	}),
-
 	create: publicProcedure
 		.input(z.object({ text: z.string().min(1) }))
 		.mutation(async ({ input }) => {
@@ -16,7 +15,6 @@ export const todoRouter = router({
 				text: input.text,
 			});
 		}),
-
 	toggle: publicProcedure
 		.input(z.object({ id: z.number(), completed: z.boolean() }))
 		.mutation(async ({ input }) => {
@@ -25,10 +23,9 @@ export const todoRouter = router({
 				.set({ completed: input.completed })
 				.where(eq(todo.id, input.id));
 		}),
-
 	delete: publicProcedure
 		.input(z.object({ id: z.number() }))
 		.mutation(async ({ input }) => {
 			return await db.delete(todo).where(eq(todo.id, input.id));
 		}),
-});
+}) as any;
