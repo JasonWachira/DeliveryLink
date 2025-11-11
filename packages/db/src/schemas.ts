@@ -9,5 +9,5 @@ export * from "./schema/items.js";
 export * from "./schema/orderItems.js";
 export * from "./schema/financialTransactions.js";
 export * from "./schema/deliveryUpdate.js";
-export * from "./schema/auth.js"; 
-export * from "./schema/index.js"; 
+export * from "./schema/auth.js";
+export * from "./schema/index.js";

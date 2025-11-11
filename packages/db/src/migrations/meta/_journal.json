@@ -15,6 +15,20 @@
       "when": 1762092505638,
       "tag": "0001_vengeful_skin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762329817451,
+      "tag": "0002_glamorous_dormammu",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1762518007654,
+      "tag": "0003_sudden_zaran",
+      "breakpoints": true
     }
   ]
 }

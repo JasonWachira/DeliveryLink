@@ -6,7 +6,7 @@ dotenv.config({
 });
 
 export default defineConfig({
-	schema: "C:/Users/jason/DeliveryLink/packages/db/src/schema",
+	schema: "./src/schema",
 	out: "./src/migrations",
 	dialect: "postgresql",
 	dbCredentials: {
