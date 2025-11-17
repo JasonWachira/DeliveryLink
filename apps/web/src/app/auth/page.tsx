@@ -19,8 +19,10 @@ export default function SignInPage() {
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
-      });
+        callbackURL: "/dashboard",
+      },
+
+      );
       toast.success("Signed in with Google", { id: loadingToast });
     } catch (error) {
       console.error("Google sign in error:", error);
@@ -39,8 +41,8 @@ export default function SignInPage() {
     try {
       const { data, error } = await authClient.signIn.magicLink({
         email,
-        callbackURL: "/",
-        newUserCallbackURL: "/",
+        callbackURL: "/dashboard",
+        newUserCallbackURL: "/dashboard",
         errorCallbackURL: "/error",
       });
 
