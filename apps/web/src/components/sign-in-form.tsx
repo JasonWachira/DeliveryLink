@@ -14,6 +14,7 @@ export default function SignInForm({
 	onSwitchToSignUp: () => void;
 }) {
 	const router = useRouter();
+	//Check if the authentication session is still loading
 	const { isPending } = authClient.useSession();
 
 	const form = useForm({
@@ -21,6 +22,8 @@ export default function SignInForm({
 			email: "",
 			password: "",
 		},
+
+		// Handle the form when submitted successfully
 		onSubmit: async ({ value }) => {
 			await authClient.signIn.email(
 				{
@@ -28,10 +31,12 @@ export default function SignInForm({
 					password: value.password,
 				},
 				{
+					// If sign-in is successful
 					onSuccess: () => {
 						router.push("/dashboard");
 						toast.success("Sign in successful");
 					},
+					// If sign-in fails
 					onError: (error) => {
 						toast.error(error.error.message || error.error.statusText);
 					},
