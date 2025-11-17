@@ -15,6 +15,8 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **Turborepo** - Optimized monorepo build system
 - **Biome** - Linting and formatting
 
+
+
 ## Getting Started
 
 First, install the dependencies:
@@ -42,14 +44,6 @@ pnpm dev
 ```
 
 Open [http://localhost:3001](http://localhost:3001) in your browser to see your fullstack application.
-
-
-
-
-
-
-
-
 
 
 
