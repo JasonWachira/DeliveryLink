@@ -1,5 +1,18 @@
-import nodemailer from "nodemailer";
+// packages/auth/email.ts
+// Purpose: helper to send "magic link" sign-in emails for DeliveryLink using Nodemailer.
+// Usage: import { sendMagicLinkEmail } from './email';
+// Security: DO NOT commit credentials—use environment variables (e.g. process.env.SMTP_USER, process.env.SMTP_PASS).
+// Notes:
+// - This module constructs both HTML and plain-text versions of the email.
+// - The HTML uses an inline-styled template; keep markup small and compatible with common email clients.
+// - Consider switching to an email provider (SendGrid, SES, Mailgun) or OAuth2 for Gmail in production.
+// - This file currently contains an embedded Gmail username/password (unsafe). Replace with secure credentials storage.
 
+import nodemailer from "nodemailer";
+// Nodemailer transporter configuration
+// - host/port/secure: for Gmail over TLS use host 'smtp.gmail.com' and port 587 with secure=false (STARTTLS).
+// - auth: don't hard-code credentials. Use process.env and, ideally, application-specific passwords or OAuth2 tokens.
+// - In production prefer a managed email service (SendGrid/AWS SES) to improve deliverability and avoid Gmail limits.
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 587,
